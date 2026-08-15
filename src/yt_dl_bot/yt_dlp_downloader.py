@@ -8,7 +8,7 @@ from .download_engine import (
     default_download_dependencies,
     generic_download_policy,
 )
-from .download_service import DownloadDependencies
+from .download_primitives import DownloadDependencies
 from .setting import Settings
 
 

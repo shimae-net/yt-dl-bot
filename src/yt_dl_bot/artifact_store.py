@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .artifact_discovery import DownloadedArtifacts
-from .download_service import DownloadDependencies
+from .download_primitives import DownloadDependencies
 
 
 @dataclass(frozen=True)
