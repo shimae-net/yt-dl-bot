@@ -18,6 +18,29 @@ class ArtifactMove:
     destination: Path
 
 
+@dataclass(frozen=True)
+class ArtifactMovePlan:
+    """Grouped artifact moves for one storage operation."""
+
+    video: ArtifactMove
+    metadata: tuple[ArtifactMove, ...]
+    thumbnails: tuple[ArtifactMove, ...]
+
+    @property
+    def moves(self) -> tuple[ArtifactMove, ...]:
+        """Return moves in their required forward execution order."""
+        return (self.video, *self.metadata, *self.thumbnails)
+
+    @property
+    def destinations(self) -> DownloadedArtifacts:
+        """Return the stored artifact paths, preserving their categories."""
+        return DownloadedArtifacts(
+            video=self.video.destination,
+            metadata=tuple(move.destination for move in self.metadata),
+            thumbnails=tuple(move.destination for move in self.thumbnails),
+        )
+
+
 class ArtifactStore:
     """Move downloaded artifacts into their durable directory layout."""
 
@@ -61,29 +84,25 @@ class ArtifactStore:
         move_plan = self.plan(artifacts)
         self._check_cancellation(cancellation_check)
         self._ensure_destinations()
-        self._reject_collisions(move_plan)
-        self._execute(move_plan, cancellation_check)
-        return DownloadedArtifacts(
-            video=move_plan[0].destination,
-            metadata=tuple(move.destination for move in move_plan[1 : 1 + len(artifacts.metadata)]),
-            thumbnails=tuple(move.destination for move in move_plan[1 + len(artifacts.metadata) :]),
-        )
+        self._reject_collisions(move_plan.moves)
+        self._execute(move_plan.moves, cancellation_check)
+        return move_plan.destinations
 
-    def plan(self, artifacts: DownloadedArtifacts) -> tuple[ArtifactMove, ...]:
+    def plan(self, artifacts: DownloadedArtifacts) -> ArtifactMovePlan:
         """Describe the stable destination layout without changing the filesystem."""
         metadata_path = self.save_path / "metadata"
         thumbnail_path = self.save_path / "thumbnail"
-        return (
-            ArtifactMove(
+        return ArtifactMovePlan(
+            video=ArtifactMove(
                 artifacts.video,
                 self.save_path,
                 self.save_path / artifacts.video.name,
             ),
-            *(
+            metadata=tuple(
                 ArtifactMove(metadata, metadata_path, metadata_path / metadata.name)
                 for metadata in artifacts.metadata
             ),
-            *(
+            thumbnails=tuple(
                 ArtifactMove(thumbnail, thumbnail_path, thumbnail_path / thumbnail.name)
                 for thumbnail in artifacts.thumbnails
             ),
