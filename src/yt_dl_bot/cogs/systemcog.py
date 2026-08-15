@@ -8,11 +8,7 @@ from discord import Embed, File, TextChannel
 from discord.ext import commands
 
 from ..application_results import DownloadResult
-from ..error_reporting import (
-    format_exception_traceback,
-    sanitize_discord_error_report,
-    split_traceback_for_embeds,
-)
+from ..discord_notification_delivery import DiscordNotificationDelivery
 
 if TYPE_CHECKING:
     from ..discord_bot_main import DownloadBot
@@ -36,6 +32,7 @@ class SystemCog(commands.Cog):
     def __init__(self, bot: "DownloadBot") -> None:
         self.bot = bot
         self.settings = bot.settings
+        self.notifications = DiscordNotificationDelivery(bot)
 
     @commands.group(name="system")
     async def botsystem(self, ctx: commands.Context["DownloadBot"]) -> None:
@@ -156,8 +153,7 @@ class SystemCog(commands.Cog):
         *args: str,
         **kwargs: object,
     ) -> None:
-        channel = cast(TextChannel, self.bot.get_channel(self.settings.LOG_CHANNEL))
-        await channel.send("``" + "\n".join(args) + "``")
+        await self.notifications.send_log(*args)
 
     @commands.command(enabled=False)
     async def send_error_log(
@@ -167,27 +163,7 @@ class SystemCog(commands.Cog):
         *args: object,
         **kwargs: object,
     ) -> None:
-        log_channel = cast(TextChannel, self.bot.get_channel(self.settings.LOG_CHANNEL))
-        error_log = format_exception_traceback(error)
-
-        # Persist the complete traceback before attempting Discord I/O. This
-        # ensures a failed notification never hides the original error.
-        self.bot.logger.error(error_log)
-        discord_error_log = sanitize_discord_error_report(error_log)
-
-        await ctx.reply("Error: Check " + log_channel.mention)
-
-        field_number = 1
-        for field_batch in split_traceback_for_embeds(discord_error_log):
-            embed = Embed()
-            for field_value in field_batch:
-                embed.add_field(
-                    name=f"Traceback {field_number}",
-                    value=field_value,
-                    inline=False,
-                )
-                field_number += 1
-            await log_channel.send(embed=embed)
+        await self.notifications.report_error(ctx, error)
 
     @commands.command(enabled=False)
     async def send_video_output_log(
@@ -195,10 +171,7 @@ class SystemCog(commands.Cog):
         ctx: commands.Context["DownloadBot"],
         result: DownloadResult,
     ) -> None:
-        channel = cast(TextChannel, self.bot.get_channel(self.settings.VIDEO_OUTPUT_CHANNEL))
-        await channel.send(
-            "**Download Success : **" + result.title + "\n" + result.source_url,
-        )
+        await self.notifications.send_download_result(result)
 
     @commands.command(enabled=False)
     async def send_highlight_output_log(
@@ -207,8 +180,7 @@ class SystemCog(commands.Cog):
         file: File,
         embed: Embed,
     ) -> None:
-        channel = cast(TextChannel, self.bot.get_channel(self.settings.HIGHLIGHT_OUTPUT_CHANNEL))
-        await channel.send(file=file, embed=embed)
+        await self.notifications.send_highlight(file, embed)
 
 
 async def setup(bot: "DownloadBot") -> None:
