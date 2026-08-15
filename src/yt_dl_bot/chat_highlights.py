@@ -176,10 +176,6 @@ class ChatHighlightPipeline:
         self.image_name = f"scoregraph_{date}_{video_id}.png"
         self.image_path = Path(settings.TMP_PATH) / self.image_name
 
-    @staticmethod
-    def _elapsed_seconds(elapsed_time: object) -> int | None:
-        return HighlightAnalyzer.elapsed_seconds(elapsed_time)
-
     def collect_comment_counts(self) -> list[int]:
         """Return comment counts grouped into 30-second buckets."""
         elapsed_times = self.chat_source.collect_elapsed_times(self.video_id)
