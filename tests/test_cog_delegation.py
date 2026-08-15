@@ -151,7 +151,7 @@ class CogDelegationTest(unittest.IsolatedAsyncioTestCase):
         with (
             patch("asyncio.to_thread", to_thread),
             patch(
-                "yt_dl_bot.cogs.twitchcog.to_thread_cancellable",
+                "yt_dl_bot.cogs.download_orchestration.to_thread_cancellable",
                 cancellable_download,
             ),
         ):
