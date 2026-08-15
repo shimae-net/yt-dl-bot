@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 from yt_dl_bot.cogs.systemcog import SystemCog
+from yt_dl_bot.discord_notification_delivery import DiscordNotificationDelivery
 from yt_dl_bot.error_reporting import (
     REDACTED,
     format_exception_traceback,
@@ -21,6 +22,9 @@ class SendErrorLogTest(unittest.IsolatedAsyncioTestCase):
         self.bot.get_channel.return_value = self.channel
         self.cog = SystemCog(self.bot)
         self.ctx = Mock(reply=AsyncMock())
+
+    def test_system_cog_uses_typed_notification_delivery(self):
+        self.assertIsInstance(self.cog.notifications, DiscordNotificationDelivery)
 
     @staticmethod
     def _long_exception():
