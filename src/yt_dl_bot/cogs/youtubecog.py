@@ -7,11 +7,11 @@ from discord import File
 from discord.ext import commands
 
 # ---local library---
-from ..cancellation import to_thread_cancellable
 from .command_arguments import (
     YouTubeURL,
     handle_url_argument_error,
 )
+from .download_orchestration import coordinate_download
 from .highlight_presenter import create_highlight_embed
 
 if TYPE_CHECKING:
@@ -37,22 +37,17 @@ class YouTubeCog(commands.Cog):
         ctx: commands.Context["DownloadBot"],
         url: str = commands.parameter(converter=YouTubeURL),
     ) -> None:
-        text = await asyncio.to_thread(self.download_service.check, url)
-
-        for t in text.split("\n"):
-            self.bot.logger.info(t)
-        await ctx.reply(text)
-
-        result = await to_thread_cancellable(
-            self.download_service.download,
+        await coordinate_download(
+            ctx,
+            self.bot,
+            self.download_service,
             url,
+            before_reply=self._log_check_result,
         )
-        self.bot.logger.info("Download Success!")
-        command = self.bot.get_command("send_video_output_log")
-        if command is None:
-            raise RuntimeError("send_video_output_log command is not loaded")
-        cog_command = cast(commands.Command[commands.Cog, ..., object], command)
-        await ctx.invoke(cog_command, result=result)
+
+    def _log_check_result(self, text: str) -> None:
+        for line in text.split("\n"):
+            self.bot.logger.info(line)
 
     @download_video.error
     async def download_video_error(

@@ -5,14 +5,13 @@ from typing import TYPE_CHECKING, cast
 # ---third party library---
 from discord.ext import commands
 
-from ..cancellation import to_thread_cancellable
-
 # ---local library---
 from ..video_download_service import TwitchStreamOffline
 from .command_arguments import (
     TwitchURL,
     handle_url_argument_error,
 )
+from .download_orchestration import coordinate_download
 
 if TYPE_CHECKING:
     from ..discord_bot_main import DownloadBot
@@ -37,7 +36,7 @@ class TwitchCog(commands.Cog):
         url: str = commands.parameter(converter=TwitchURL),
     ) -> None:
         try:
-            result = await asyncio.to_thread(
+            check_result = await asyncio.to_thread(
                 self.download_service.check,
                 url,
             )
@@ -45,18 +44,13 @@ class TwitchCog(commands.Cog):
             await ctx.reply("このチャンネルでライブは始まっていません。")
             return
 
-        await ctx.reply(result)
-
-        download_result = await to_thread_cancellable(
-            self.download_service.download,
+        await coordinate_download(
+            ctx,
+            self.bot,
+            self.download_service,
             url,
+            check_result=check_result,
         )
-        self.bot.logger.info("Download Success!")
-        command = self.bot.get_command("send_video_output_log")
-        if command is None:
-            raise RuntimeError("send_video_output_log command is not loaded")
-        cog_command = cast(commands.Command[commands.Cog, ..., object], command)
-        await ctx.invoke(cog_command, result=download_result)
 
     @download_video.error
     async def download_video_error(
