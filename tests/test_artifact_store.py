@@ -75,11 +75,19 @@ class ArtifactStoreTest(unittest.TestCase):
         move_plan = store.plan(artifacts(Path("/tmp/downloads")))
 
         self.assertEqual(
-            tuple(move.destination for move in move_plan),
+            tuple(move.destination for move in move_plan.moves),
             (
                 Path("/archive/video.mp4"),
                 Path("/archive/metadata/video.info.json"),
                 Path("/archive/thumbnail/video.webp"),
+            ),
+        )
+        self.assertEqual(
+            move_plan.destinations,
+            DownloadedArtifacts(
+                video=Path("/archive/video.mp4"),
+                metadata=(Path("/archive/metadata/video.info.json"),),
+                thumbnails=(Path("/archive/thumbnail/video.webp"),),
             ),
         )
 
