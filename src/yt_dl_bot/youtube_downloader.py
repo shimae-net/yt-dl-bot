@@ -8,7 +8,7 @@ from .download_engine import (
     default_download_dependencies,
     youtube_download_policy,
 )
-from .download_service import DownloadDependencies, RetryPolicy
+from .download_primitives import DownloadDependencies, RetryPolicy
 from .setting import Settings
 from .url_validation import extract_youtube_video_id
 

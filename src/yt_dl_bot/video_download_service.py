@@ -9,7 +9,7 @@ from .application_errors import VideoCheckError, VideoDownloadError
 from .application_results import DownloadResult
 from .artifact_discovery import ArtifactDiscoveryError
 from .download_engine import Cancellation, DownloadOutcome
-from .download_service import DownloadWaitError
+from .download_primitives import DownloadWaitError
 from .external_error_adapter import error_detail, is_twitch_offline
 
 DOWNLOAD_ADAPTER_ERRORS = (

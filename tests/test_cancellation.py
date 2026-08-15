@@ -17,7 +17,7 @@ from yt_dl_bot.download_engine import (
     generic_download_policy,
     youtube_download_policy,
 )
-from yt_dl_bot.download_service import DownloadDependencies, RetryPolicy
+from yt_dl_bot.download_primitives import DownloadDependencies, RetryPolicy
 from yt_dl_bot.video_download_service import VideoDownloadService
 
 

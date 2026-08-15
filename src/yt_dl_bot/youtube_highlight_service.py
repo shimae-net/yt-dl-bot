@@ -11,7 +11,7 @@ from pytchat import exceptions as pytchat_exceptions
 from .application_errors import ArtifactStorageError, HighlightCreationError
 from .application_results import HighlightResult
 from .chat_highlights import ChatHighlightPipeline
-from .download_service import MakeDirectory
+from .download_primitives import MakeDirectory
 from .external_error_adapter import error_detail
 from .highlight import Highlight
 

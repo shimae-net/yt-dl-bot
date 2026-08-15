@@ -12,7 +12,7 @@ import yt_dlp
 
 from .artifact_discovery import DownloadedArtifacts, discover_download_artifacts
 from .artifact_store import ArtifactStore
-from .download_service import (
+from .download_primitives import (
     DownloadDependencies,
     DownloadRetryLimitExceeded,
     PermanentDownloadError,

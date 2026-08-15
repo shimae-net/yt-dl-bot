@@ -4,7 +4,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-from .download_service import YouTubeDL
+from .download_primitives import YouTubeDL
 
 VIDEO_EXTENSIONS = frozenset(
     {

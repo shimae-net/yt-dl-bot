@@ -7,7 +7,7 @@ from download_adapter_test_support import DownloadAdapterTestCase
 
 from yt_dl_bot.artifact_discovery import DownloadedArtifacts
 from yt_dl_bot.download_engine import DownloadOutcome
-from yt_dl_bot.download_service import (
+from yt_dl_bot.download_primitives import (
     DownloadDependencies,
     DownloadRetryLimitExceeded,
     PermanentDownloadError,

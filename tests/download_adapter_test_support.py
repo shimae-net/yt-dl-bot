@@ -2,7 +2,7 @@ import datetime
 from pathlib import Path
 from unittest.mock import Mock
 
-from yt_dl_bot.download_service import DownloadDependencies
+from yt_dl_bot.download_primitives import DownloadDependencies
 
 
 class FakeYoutubeDL:
